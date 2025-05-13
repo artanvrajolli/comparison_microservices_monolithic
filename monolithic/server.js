@@ -13,9 +13,6 @@ const blogRoutes = require('./routes/routes');
 // Create Express app
 const app = express();
 
-// Connect to database
-connectDB();
-
 // Middleware
 app.use(bodyParser.json());
 app.use(cors());
@@ -26,7 +23,24 @@ app.use('/api/blogs', blogRoutes);
 // Set port
 const PORT = process.env.PORT || 5000;
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
-});
+// Function to start the server
+const startServer = async () => {
+  try {
+    await connectDB();
+    if (process.env.NODE_ENV !== 'test') {
+      app.listen(PORT, () => {
+        console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+      });
+    }
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+// Only start the server if this file is run directly
+if (require.main === module) {
+  startServer();
+}
+
+module.exports = { app, startServer };
