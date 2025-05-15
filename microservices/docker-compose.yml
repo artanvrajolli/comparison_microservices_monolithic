@@ -1,0 +1,82 @@
+services:
+  # API Gateway
+  api-gateway:
+    build: ./services/api-gateway
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - BLOG_SERVICE_URL=http://blog-service:5001
+      - USER_SERVICE_URL=http://user-service:5002
+      - COMMENT_SERVICE_URL=http://comment-service:5003
+    depends_on:
+      - blog-service
+      - user-service
+      - comment-service
+    networks:
+      - backend
+
+  # Blog Service
+  blog-service:
+    build: ./services/blog-service
+    ports:
+      - "5001:5001"
+    environment:
+      - PORT=5001
+      - MONGODB_URI=mongodb://mongodb:27017/blog-service
+      - USER_SERVICE_URL=http://user-service:5002/api/users
+      - COMMENT_SERVICE_URL=http://comment-service:5003/api/comments
+    depends_on:
+      - mongodb
+    networks:
+      - backend
+
+  # User Service
+  user-service:
+    build: ./services/user-service
+    ports:
+      - "5002:5002"
+    environment:
+      - PORT=5002
+      - MONGODB_URI=mongodb://mongodb:27017/user-service
+      - BLOG_SERVICE_URL=http://blog-service:5001/api/blogs
+      - COMMENT_SERVICE_URL=http://comment-service:5003/api/comments
+    depends_on:
+      - mongodb
+    networks:
+      - backend
+
+  # Comment Service
+  comment-service:
+    build: ./services/comment-service
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - MONGODB_URI=mongodb://mongodb:27017/comment-service
+      - USER_SERVICE_URL=http://user-service:5002/api/users
+      - BLOG_SERVICE_URL=http://blog-service:5001/api/blogs
+    depends_on:
+      - mongodb
+    networks:
+      - backend
+
+  # MongoDB
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - backend
+    environment:
+      - MONGO_INITDB_DATABASE=blog-db
+    command: mongod --bind_ip_all
+
+volumes:
+  mongodb_data:
+
+networks:
+  backend:
+    driver: bridge 
