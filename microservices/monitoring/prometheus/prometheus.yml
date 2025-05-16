@@ -1,0 +1,28 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  - job_name: 'api-gateway'
+    static_configs:
+      - targets: ['api-gateway:5000']
+
+  - job_name: 'blog-service'
+    static_configs:
+      - targets: ['blog-service:5001']
+
+  - job_name: 'user-service'
+    static_configs:
+      - targets: ['user-service:5002']
+
+  - job_name: 'comment-service'
+    static_configs:
+      - targets: ['comment-service:5003']
+
+  - job_name: 'mongodb'
+    static_configs:
+      - targets: ['mongodb:27017'] 
