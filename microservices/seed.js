@@ -4,14 +4,13 @@ const path = require('path');
 console.log('Starting database seeding process...');
 
 // Function to run a command as a spawned process
-const runCommand = (command, cwd, serviceName) => {
+const runCommand = (command, serviceName) => {
   return new Promise((resolve, reject) => {
     console.log(`\n===== ${serviceName} =====`);
-    console.log(`Running command: ${command} in directory: ${cwd}`);
-    
+    console.log(`Running command: ${command}`);
+
     const [cmd, ...args] = command.split(' ');
-    const process = spawn(cmd, args, { 
-      cwd: path.resolve(cwd),
+    const process = spawn(cmd, args, {
       shell: true,
       stdio: 'inherit' // Show output directly in the console
     });
@@ -37,16 +36,16 @@ const runCommand = (command, cwd, serviceName) => {
 const seedAll = async () => {
   try {
     console.log('\nStarting seeding process in sequence...');
-    
+
     // Step 1: Seed users
-    await runCommand('npm run seed', 'services/user-service', 'USER SERVICE');
-    
+    await runCommand('docker-compose exec user-service npm run seed', 'USER SERVICE');
+
     // Step 2: Seed blogs
-    await runCommand('npm run seed', 'services/blog-service', 'BLOG SERVICE');
-    
+    await runCommand('docker-compose exec blog-service npm run seed', 'BLOG SERVICE');
+
     // Step 3: Seed comments
-    await runCommand('npm run seed', 'services/comment-service', 'COMMENT SERVICE');
-    
+    await runCommand('docker-compose exec comment-service npm run seed', 'COMMENT SERVICE');
+
     console.log('\n===== ALL SEEDING COMPLETED SUCCESSFULLY =====');
   } catch (error) {
     console.error('\n===== SEEDING FAILED =====');
