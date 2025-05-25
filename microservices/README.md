@@ -26,6 +26,10 @@ This is a microservices-based blog application with the following components:
 3. Build and start the services:
 
 ```bash
+# first 
+npm install
+
+# then
 docker-compose up --build
 ```
 

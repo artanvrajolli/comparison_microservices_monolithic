@@ -74,6 +74,38 @@ services:
       - MONGO_INITDB_DATABASE=blog-db
     command: mongod --bind_ip_all
 
+  # Node Exporter
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    restart: unless-stopped
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    ports:
+      - "9100:9100"
+    networks:
+      - monitoring
+
+  # Blackbox Exporter
+  blackbox-exporter:
+    image: prom/blackbox-exporter:latest
+    ports:
+      - "9115:9115"
+    volumes:
+      - ./monitoring/blackbox/blackbox.yml:/config/blackbox.yml
+    command:
+      - '--config.file=/config/blackbox.yml'
+    networks:
+      - monitoring
+    restart: unless-stopped
+
   # Prometheus - Metrics collection
   prometheus:
     image: prom/prometheus:latest
@@ -86,12 +118,15 @@ services:
       - backend
       - monitoring
     restart: unless-stopped
+    depends_on:
+      - blackbox-exporter
+      - node-exporter
 
   # Grafana - Visualization and dashboards
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3000:3000"
+      - "3030:3000"
     volumes:
       - grafana_data:/var/lib/grafana
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
